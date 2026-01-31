@@ -17,6 +17,7 @@ crn <- "00000006" # crn
 url <- paste0("https://api.company-information.service.gov.uk/company/", crn) # url for search
 response <- httr::GET(url, authenticate(key, "")) # send the request - authentication key, blank password ""
 result <- fromJSON(content(response, "text", encoding = "UTF-8")) # extract the response 
+result_df <- as.data.frame(result)
 
 ########## Example B: search multiple CRNs to get multiple company profiles
 
@@ -34,7 +35,7 @@ records_df <- do.call(bind_rows, lapply(records, as.data.frame))
 ########## Example C: Search Company name
 # Note that search endpoints have a limit
 # Company search limited to 20 results per page, and 1000 results in total
-# Therefore write function so that multiple pages of results can be retrieved to the max
+# Therefore write function so that multiple pages of results can be retrieved
 # Otherwise only first 20 results will be retrieved 
 
 # Function 1: search
@@ -61,5 +62,5 @@ search_companies_df <- function(query, max_pages = 50) {
 }
 
 # Example
-company_df <- search_companies_df("tesco")
+company_df <- search_companies_df("cadishead", max_pages = 4) 
 

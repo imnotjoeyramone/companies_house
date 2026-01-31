@@ -48,5 +48,14 @@ po/*~
 # RStudio Connect folder
 rsconnect/
 
+# Rproj files
+.Rproj
+
+# Rprofile files
+.Rprofile
+
 # Data files
+**.txt
+**.csv
+**.rds
 
