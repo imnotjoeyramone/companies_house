@@ -74,3 +74,12 @@ overseas_ents %>%
   ylab("Count")
 
 # This suggests that overseas entity only became a category in 2022 - however, a sharp upward trend since.
+
+#### Exploration 2: SICs #####
+
+crn_sic_master <-
+  company_data %>% 
+  select(company_number, contains("sic")) %>% 
+  unique()
+
+write_rds(crn_sic_master, "data/crn_sic_master.rds")

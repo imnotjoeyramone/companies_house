@@ -1,4 +1,4 @@
-########## Initialise
+########## Initialise ########## 
 
 library(tidyverse)
 library(httr)
@@ -11,28 +11,25 @@ library(janitor)
 
 key <- Sys.getenv("companies_house_api_key") # key saved in .renviron - do not hard code or publish to github!
 
-########## Example A: search single CRN to retrieve company profile
+########## Example A: search single CRN to retrieve company profile ########## 
 
-crn <- "00000006" # crn
-url <- paste0("https://api.company-information.service.gov.uk/company/", crn) # url for search
-response <- httr::GET(url, authenticate(key, "")) # send the request - authentication key, blank password ""
-result <- fromJSON(content(response, "text", encoding = "UTF-8")) # extract the response 
-result_df <- as.data.frame(result)
-
-########## Example B: search multiple CRNs to get multiple company profiles
-
-company_numbers <- c("00000006", "00000007", "00000008")
-
-get_companies <- function(crn) {
+get_company <- function(crn, key) {
   url <- paste0("https://api.company-information.service.gov.uk/company/", crn)
-  res <- GET(url, authenticate(key, ""))
-  fromJSON(content(res, "text", encoding = "UTF-8"))
+  GET(url, authenticate(key, "")) %>% 
+  content("text", encoding = "UTF-8") %>% 
+  fromJSON(flatten = TRUE)
 }
 
-records <- lapply(company_numbers, get_companies)
+company <- get_company("00000006", key)
+company_df <- as.data.frame(company)
+
+########## Example B: function multiple CRNs to get multiple company profiles ########## 
+
+company_numbers <- c("00000006", "00000009", "00000011")
+records <- map(company_numbers, get_company, key = key)
 records_df <- do.call(bind_rows, lapply(records, as.data.frame))
 
-########## Example C: Search Company name
+########## Example C: Search Company name ########## 
 # Note that search endpoints have a limit
 # Company search limited to 20 results per page, and 1000 results in total
 # Therefore write function so that multiple pages of results can be retrieved
@@ -54,7 +51,7 @@ fetch_search_page <- function(query, start_index = 0) {
 # Function 2: retrieve results as df
 search_companies_df <- function(query, max_pages = 50) {
   seq(0, by = 20, length.out = max_pages) %>% # create page indexes
-    map(~ fetch_search_page(query, start_index = .x)) %>% # repeats query for each index
+    map(~ fetch_search_page(query, start_index = .x)) %>% # repeats query for each element
     keep(~ length(.x$items) > 0) %>% # only keep if results exists - so search ends if no further results
     map("items") %>% # retrieve the items list
     list_rbind() %>%  # bind the elements of the list together
