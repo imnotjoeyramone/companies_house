@@ -28,6 +28,4 @@ get_coords <-
   
 leaflet(get_coords) %>%
   addTiles() %>%
-  addCircleMarkers(~longitude, ~latitude) 
-
-#####
+  addCircleMarkers(~longitude, ~latitude)
