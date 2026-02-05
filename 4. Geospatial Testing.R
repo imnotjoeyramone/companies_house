@@ -4,9 +4,13 @@ library(tidyverse)
 library(janitor)
 library(vroom)
 library(sf)
+library(leaflet)
+
+source("functions/dmy_converter.r")
 
 # company pcde list created in 1. Basic Company Data Scoping
 company_pcde_list  <- vroom("data/BasicCompanyData.csv") %>% 
+  clean_names() %>% 
   select(company_name, company_number, reg_address_post_code, incorporation_date)
   
 # uprns <- vroom("data/osopenuprn_202601.csv") %>% clean_names()
@@ -24,4 +28,6 @@ get_coords <-
   
 leaflet(get_coords) %>%
   addTiles() %>%
-  addCircleMarkers(~longitude, ~latitude)
+  addCircleMarkers(~longitude, ~latitude) 
+
+#####
