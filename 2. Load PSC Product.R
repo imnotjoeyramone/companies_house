@@ -11,7 +11,7 @@ library(janitor)
 # readLines allows us to set a limit if we want - recommended for testing as the dataset is very large 
 # Ensure flatten = TRUE as there are nested columns 
 
-lines <- readLines("data/persons-with-significant-control-snapshot-2026-01-21.txt", n = 100000)
+lines <- readLines("data/persons-with-significant-control-snapshot-2026-01-21.txt", n = 1000000)
 
 psc_data <- 
   stream_in(textConnection(lines), flatten = TRUE) %>% 
@@ -31,19 +31,16 @@ sic_master <- readRDS("data/crn_sic_master.rds")
 # Subset to relevant cols
 verification_subset <- 
   psc_data %>% 
-  select(company_number, name, kind, ceased, description, is_sanctioned, address_region, contains("identi"), contains("sic")) %>% 
+  select(company_number, name, kind, ceased, description, country_of_residence, is_sanctioned, address_region, contains("identi"), contains("sic")) %>% 
   filter(rowSums(!is.na(across(everything()))) > 3) %>% # drop anything that has mostly missing data
-  convert_iso8601_cols() %>% 
-  left_join(sic_master, by = "company_number")
+  convert_iso8601_cols() 
 
 # Filter for verified population
 verified_population <- 
   verification_subset %>% 
   filter(!is.na(identity_verification_details_identity_verified_on)) %>% 
   add_count(identification_country_registered, name = "country_count") 
-
-# what SIC/industries are common in the verified population? 
-
+  
 top_verfied_countries <-
   verified_population %>% 
   select(identification_country_registered, country_count) %>% 
@@ -56,6 +53,6 @@ ggplot(top_verfied_countries, aes(x=identification_country_registered, y= countr
 
 # Filter for unverified population
 unverified_population <- 
-  anti_join(verification_subset, verified_population, by = c("company_number", "name"))
+  anti_join(verification_subset, verified_population, by = c("company_number", "name")) 
 
 
